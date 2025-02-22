@@ -1,0 +1,30 @@
+# 📂 Python 관련
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+env/
+*.egg-info/
+
+# 📂 Docker 관련 (로컬 볼륨 데이터 & 컨테이너 로그 제외)
+logs/*.log  # 개별 로그 파일만 제외
+docker-compose.override.yml
+.env
+!.env.example  # 기본 환경 변수 템플릿 유지
+
+# 📂 MongoDB 관련 (데이터베이스 스키마는 공유하지만, 실제 데이터는 제외)
+data/mongodb/  # 실제 데이터 파일 제외 (모든 팀원이 동일한 DB 스키마를 사용하도록 초기화 스크립트 제공)
+!init-mongo.js  # Git에 포함하여 초기 데이터베이스 설정 유지
+
+# 📂 Elasticsearch 관련
+data/elasticsearch/  # 실제 Elasticsearch 데이터 제외
+
+# 📂 VSCode / JetBrains / 기타 개발 환경
+.vscode/
+.idea/
+*.iml
+
+# 📂 OS 관련 (Mac / Windows)
+.DS_Store
+Thumbs.db
