@@ -1,6 +1,14 @@
-version: '3.8'
-
 services:
+  tor:
+    image: dperson/torproxy  # ✅ Tor 프록시 컨테이너 추가
+    container_name: tor_proxy
+    restart: always
+    ports:
+      - "9050:9050"  # SOCKS5 프록시 포트
+    command: "tor -f /etc/tor/torrc"  # 기본 설정 유지
+    networks:
+      - backend
+
   mongodb:
     image: mongo
     container_name: mongodb
