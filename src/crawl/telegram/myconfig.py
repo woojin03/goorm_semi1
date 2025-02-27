@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 
 # .env 파일 로드
-load_dotenv()
+load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
 
 # ✅ Discord Bot 설정 (긴급 알람 & 보고서 전송 채널 통합)
 DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")  # 디스코드 봇 토큰
