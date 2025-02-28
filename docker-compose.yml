@@ -1,0 +1,84 @@
+#version: '3.8'
+services:
+  tor:
+    image: dperson/torproxy  # ✅ Tor 프록시 컨테이너 추가
+    container_name: tor_proxy
+    restart: always
+    ports:
+      - "9050:9050"  # SOCKS5 프록시 포트
+    command: "tor -f /etc/tor/torrc"  # 기본 설정 유지
+    networks:
+      - backend
+
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+    volumes:
+      - ./data/mongodb:/data/db  # 데이터를 로컬에 저장
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro  # 초기화 스크립트 실행
+    env_file:
+      - .env  # ✅ 개별 서비스 내부에 위치해야 함
+    networks:
+      - backend
+
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    restart: always
+    depends_on:
+      - mongodb
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+      - ME_CONFIG_MONGODB_AUTH_DATABASE=admin
+      - ME_CONFIG_BASICAUTH_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - ME_CONFIG_BASICAUTH_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+    env_file:
+      - .env  # ✅ 개별 서비스 내부에 위치해야 함
+    networks:
+      - backend
+
+  elasticsearch:
+    image: elasticsearch:8.17.2
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - network.host=0.0.0.0
+      - bootstrap.memory_lock=true
+    ports:
+      - "9200:9200"
+    networks:
+      - backend
+    volumes:
+      - ./data/elasticsearch:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200/_cluster/health"]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+      timeout: 5s
+
+  init-elastic:
+    build: .
+    container_name: init-elastic
+    depends_on:
+      elasticsearch:
+        condition: service_healthy  # ✅ Elasticsearch가 완전히 실행된 후에 실행
+    command: ["python", "init-elastic.py"]
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
