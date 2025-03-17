@@ -28,3 +28,7 @@ data/elasticsearch/  # 실제 Elasticsearch 데이터 제외
 # 📂 OS 관련 (Mac / Windows)
 .DS_Store
 Thumbs.db
+
+semi1_env/
+session_name.session
+session_name.session-journal
